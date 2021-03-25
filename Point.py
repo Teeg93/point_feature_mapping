@@ -35,6 +35,9 @@ class Cluster:
             self.points=points
         self.permutations=[]
 
+    def __getitem__(self, item):
+        return self.points[item]
+
     def addPoint(self,point):
         if not isinstance(point,Point2D):
             print("WARNING: Cluster.addPoint(point) expects 'point' to be of type 'Point2D'")
@@ -58,3 +61,16 @@ class Cluster:
                 else:
                     points[i], points[k - 1] = points[k - 1], points[i]  # swap k-1 with i
 
+
+class Pair:
+    def __init__(self,point_1,point_2):
+        self.point_1=point_1
+        self.point_2=point_2
+    def  __getitem__(self, item):
+        if item==0:
+            return self.point_1
+        elif item==1:
+            return self.point_2
+    def distance(self):
+        distance = self.point_1.distanceTo(self.point_2)
+        return distance
