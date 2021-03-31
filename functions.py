@@ -101,8 +101,9 @@ def visualizeLocalClusters(C1,C2):
 def samSearch(M,D):
     Cm=[] #list of local clusters from model
     Cd=[] #list of local clusterd from data
+    candidates = []
     for i in range(len(D)):
-        Cd.append(generateLocalCluster(D,D[i]))
+        Cd.append(generateLocalCluster(D,D[i],k=7))
     for j in range(len(M)):
         Cm.append(generateLocalCluster(M,M[j]))
     for i in range(len(Cd)): #for each data cluster
@@ -112,7 +113,7 @@ def samSearch(M,D):
         index = 0
         bestRotatedClust = None
         for j in range(len(Cm)): #search each model cluster
-            for theta in np.arange(0,2*np.pi,0.02): #rotate each cluster
+            for theta in np.arange(0,0.02,0.02): #rotate each cluster
                 rotatedCd = Cd[i].rotateLocalCluster(theta)
                 distance,numberOfMatches= rotatedCd.compareDistance(Cm[j])
                 if numberOfMatches >= bestNumberOfMatches:
@@ -122,9 +123,13 @@ def samSearch(M,D):
                         bestTheta=theta
                         index = j
                         bestRotatedClust = rotatedCd
-        print(f"Matched point {i} ({Cd[i][0][0]:.2f},{Cd[i][0][1]:.2f}) to {index} ({Cm[index][0][0]:.2f},{Cm[index][0][1]:.2f})")
-        print(f"Best theta: {2*np.pi-bestTheta}, Best Distance: {bestDistance}, Best Number of Matches: {bestNumberOfMatches}")
-        visualizeLocalClusters(bestRotatedClust,Cm[index])
+        #print(f"Matched point {i} ({Cd[i][0][0]:.2f},{Cd[i][0][1]:.2f}) to {index} ({Cm[index][0][0]:.2f},{Cm[index][0][1]:.2f})")
+        #print(f"Best theta: {2*np.pi-bestTheta}, Best Distance: {bestDistance}, Best Number of Matches: {bestNumberOfMatches}")
+        candidates.append([Cd[i][0],Cm[index][0],bestNumberOfMatches,bestDistance])
+
+    candidates = reversed(sorted(candidates,key=lambda x: (x[2],x[3]))) #sort first by number of matches, then by distance
+    return candidates
+    #visualizeLocalClusters(bestRotatedClust,Cm[index])
 
 def self_test():
     M = []
