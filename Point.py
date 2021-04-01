@@ -103,7 +103,7 @@ class LocalCluster:
         neighbours = []
         for p in self.neighbours:
             neighbours.append(p.transformPoint(0,0,theta))
-        return LocalCluster(self.origin,neighbours=neighbours)
+        return LocalCluster(self.origin,neighbours=neighbours,threshold=self.threshold)
 
     def compareDistance(self,cluster):
         used_idx=[]
@@ -125,7 +125,7 @@ class LocalCluster:
                 ranges.append(shortest_dist)
 
         if len(ranges) == 0:
-            return (9999,0)
+            return (np.inf,0)
         distance = 0
         numberOfMatches=0
         for i in range(len(ranges)):

@@ -1,4 +1,4 @@
-from .Point import Point2D, Cluster, Pair, LocalCluster
+from Point import Point2D, Cluster, Pair, LocalCluster
 import numpy as np
 import matplotlib.pyplot as plt
 def four_nearest_neighbours(M,m):
@@ -18,10 +18,12 @@ def four_nearest_neighbours(M,m):
         C.addPoint(distances[i][1]) #add three nearest neighbours to point
     return C
 
-def generateLocalCluster(M,m,k=15):
+def generateLocalCluster(M,m,k=15,threshold=2.0):
     """ Generate a cluster with k points at coordinate origin point m"""
+    if k>len(M):
+        k=len(M)-1
     distances=[]
-    C = LocalCluster(m) #initialize origin
+    C = LocalCluster(m,threshold=threshold) #initialize origin
     for i,point in enumerate(M):
         distances.append([m.distanceTo(M[i]),M[i]])
     distances=sorted(distances,key=lambda x:x[0])
@@ -98,22 +100,22 @@ def visualizeLocalClusters(C1,C2):
     plt.scatter(x1[0],y1[0])
     plt.scatter(x2[0],y2[0])
     plt.show()
-def samSearch(M,D):
+
+def samSearch(M,D,data_kNN=7,model_kNN=7,match_threshold=1.0,variance_yaw=0.0):
     Cm=[] #list of local clusters from model
     Cd=[] #list of local clusterd from data
     candidates = []
     for i in range(len(D)):
-        Cd.append(generateLocalCluster(D,D[i],k=7))
+        Cd.append(generateLocalCluster(D,D[i],k=data_kNN,threshold=match_threshold))
     for j in range(len(M)):
-        Cm.append(generateLocalCluster(M,M[j]))
+        Cm.append(generateLocalCluster(M,M[j],k=model_kNN,threshold=match_threshold))
     for i in range(len(Cd)): #for each data cluster
         bestTheta = 0
         bestDistance = np.inf
         bestNumberOfMatches = 0
         index = 0
-        bestRotatedClust = None
         for j in range(len(Cm)): #search each model cluster
-            for theta in np.arange(0,0.02,0.02): #rotate each cluster
+            for theta in np.arange(-variance_yaw,variance_yaw+0.05,0.05): #rotate each cluster
                 rotatedCd = Cd[i].rotateLocalCluster(theta)
                 distance,numberOfMatches= rotatedCd.compareDistance(Cm[j])
                 if numberOfMatches >= bestNumberOfMatches:
@@ -122,12 +124,12 @@ def samSearch(M,D):
                         bestDistance=distance
                         bestTheta=theta
                         index = j
-                        bestRotatedClust = rotatedCd
-        #print(f"Matched point {i} ({Cd[i][0][0]:.2f},{Cd[i][0][1]:.2f}) to {index} ({Cm[index][0][0]:.2f},{Cm[index][0][1]:.2f})")
-        #print(f"Best theta: {2*np.pi-bestTheta}, Best Distance: {bestDistance}, Best Number of Matches: {bestNumberOfMatches}")
+        print(f"Matched point {i} ({Cd[i][0][0]:.2f},{Cd[i][0][1]:.2f}) to {index} ({Cm[index][0][0]:.2f},{Cm[index][0][1]:.2f})")
+        print(f"Best theta: {2*np.pi-bestTheta}, Best Distance: {bestDistance}, Best Number of Matches: {bestNumberOfMatches}")
         candidates.append([Cd[i][0],Cm[index][0],bestNumberOfMatches,bestDistance])
 
-    candidates = reversed(sorted(candidates,key=lambda x: (x[2],x[3]))) #sort first by number of matches, then by distance
+    candidates = sorted(candidates,key=lambda x: (x[2],x[3])) #sort first by number of matches, then by distance
+    candidates.reverse()
     return candidates
     #visualizeLocalClusters(bestRotatedClust,Cm[index])
 
