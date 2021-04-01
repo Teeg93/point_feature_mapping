@@ -102,6 +102,10 @@ def visualizeLocalClusters(C1,C2):
     plt.show()
 
 def samSearch(M,D,data_kNN=7,model_kNN=7,match_threshold=1.0,variance_yaw=0.0):
+    """
+    This is currently an exhaustive search
+    TODO: Implement a magnitude-based preferential search with an end criterion (we only need 1 star after all)
+    """
     Cm=[] #list of local clusters from model
     Cd=[] #list of local clusterd from data
     candidates = []
