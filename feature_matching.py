@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import os
 from matplotlib import pyplot as plt
 try:
     from .functions import *
@@ -124,7 +125,7 @@ def compute_distance_score(arr1,arr2,threshold=np.inf):
     return score
 
 
-def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pixel_size=1.12e-6,display=False,data_threshold=60,model_threshold=50,star_match_threshold=1.0,variance_yaw=0.0):
+def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pixel_size=1.12e-6,display=False,data_threshold=60,model_threshold=50,star_match_threshold=1.0,variance_yaw=0.0,output_path=""):
     """
     :param im1: image containing the data point
     :param im2: image of the model
@@ -229,7 +230,11 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
         plt.imshow(im2)
         plt.title("Model")
         plt.show()
-
+    if output_path:
+        data_path=os.path.join(output_path,"data.jpg")
+        model_path=os.path.join(output_path,"model.jpg")
+        cv2.imwrite(data_path,im1)
+        cv2.imwrite(model_path,im2)
     return mean_x,mean_y
 
 if __name__ == "__main__":
