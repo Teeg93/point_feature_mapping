@@ -12,8 +12,21 @@ def threshold(grayscale_img,threshold=100,num_stars=25,tolerance=3,depth=0):
     ret,thresholded_image = cv2.threshold(grayscale_img,threshold,255,cv2.THRESH_BINARY)
     res = cv2.morphologyEx(thresholded_image,cv2.MORPH_OPEN,kernel)
     cnts, _ = cv2.findContours(thresholded_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    return cnts
-    #TODO: make this adaptive to return n number of contours
+    
+    intensitySortingList=[]
+    for contour in cnts:
+        mask = np.zeros(thresholded_image.shape,np.uint8)
+        cv2.drawContours(mask,contour,-1,255,-1)
+        mean = cv2.mean(grayscale_img,mask=mask)
+        intensitySortingList.append([contour,mean])
+    sortedContours=sorted(intensitySortingList,key=lambda x: x[1]) #sort by average intensity
+    sortedContours.reverse()
+    if num_stars > len(sortedContours):
+        num_stars = len(sortedContours)
+    returnList = []
+    for i in range(num_stars):
+        returnList.append(sortedContours[i][0])
+    return returnList
 
 class ImageMeta:
     def __init__(self,width,height,focal_length,pixel_size,hfov=None,vfov=None):
@@ -128,8 +141,8 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
     """
     #Threshold the images
     imageMeta = ImageMeta(width,height,focal_length=focal_length,pixel_size=pixel_size)
-    data_cnts = threshold(im1,threshold=data_threshold)
-    model_cnts = threshold(im2,threshold=model_threshold)
+    data_cnts = threshold(im1,threshold=data_threshold,num_stars=30)
+    model_cnts = threshold(im2,threshold=model_threshold,num_stars=60)
 
     data_stars = []
     model_stars = []
