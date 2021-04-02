@@ -1,4 +1,7 @@
-from Point import Point2D, Cluster, Pair, LocalCluster
+try:
+    from .Point import Point2D, Cluster, Pair, LocalCluster
+except:
+    from Point import Point2D,Cluster,Pair,LocalCluster
 import numpy as np
 import matplotlib.pyplot as plt
 def four_nearest_neighbours(M,m):

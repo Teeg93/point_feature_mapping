@@ -1,7 +1,10 @@
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
-from functions import *
+try:
+    from .functions import *
+except:
+    from functions import *
 import time
 
 def threshold(grayscale_img,threshold=100,num_stars=25,tolerance=3,depth=0):
