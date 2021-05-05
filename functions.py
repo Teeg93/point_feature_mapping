@@ -131,8 +131,8 @@ def samSearch(M,D,data_kNN=7,model_kNN=7,match_threshold=1.0,variance_yaw=0.0):
                         bestDistance=distance
                         bestTheta=theta
                         index = j
-        print(f"Matched point {i} ({Cd[i][0][0]:.2f},{Cd[i][0][1]:.2f}) to {index} ({Cm[index][0][0]:.2f},{Cm[index][0][1]:.2f})")
-        print(f"Best theta: {2*np.pi-bestTheta}, Best Distance: {bestDistance}, Best Number of Matches: {bestNumberOfMatches}")
+        #print(f"Matched point {i} ({Cd[i][0][0]:.2f},{Cd[i][0][1]:.2f}) to {index} ({Cm[index][0][0]:.2f},{Cm[index][0][1]:.2f})")
+        #print(f"Best theta: {2*np.pi-bestTheta}, Best Distance: {bestDistance}, Best Number of Matches: {bestNumberOfMatches}")
         candidates.append([Cd[i][0],Cm[index][0],bestNumberOfMatches,bestDistance])
 
     candidates = sorted(candidates,key=lambda x: (x[2],x[3])) #sort first by number of matches, then by distance

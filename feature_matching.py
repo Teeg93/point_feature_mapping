@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import os
 from matplotlib import pyplot as plt
+from datetime import datetime
 try:
     from .functions import *
 except:
@@ -37,12 +38,12 @@ class ImageMeta:
         self.pixel_size = pixel_size
         if not hfov:
             self.hfov = np.degrees(self.compute_fov(width,pixel_size,focal_length))
-            print(f"Horizontal FOV: {self.hfov}")
+            #print(f"Horizontal FOV: {self.hfov}")
         else:
             self.hfov = hfov
         if not vfov:
             self.vfov = np.degrees(self.compute_fov(height,pixel_size,focal_length))
-            print(f"Vertical FOV:   {self.vfov}")
+            #print(f"Vertical FOV:   {self.vfov}")
         else:
             self.vfov = vfov
         self.x_mid = self.width / 2
@@ -195,11 +196,13 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
     #run the matching operation
     candidates = samSearch(M,D,data_kNN=data_kNN,model_kNN=model_kNN,match_threshold=star_match_threshold,variance_yaw=variance_yaw)
     search_time = time.time()-now
-    print(f"Search time: {search_time}")
+    #print(f"Search time: {search_time}")
 
     bestNumMatches = candidates[0][2]
     disp_x = []
     disp_y = []
+    point_0 = (candidates[0][0][0],candidates[0][0][1])
+    point_1 = (candidates[0][1][0],candidates[0][1][1])
     for i,candidate in enumerate(candidates):
         if (candidate[2] < bestNumMatches and i > 4): #only use candidates with high number of matches
             break
@@ -219,7 +222,7 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
         #cv2.circle(im2,point0, 10, color, 2)
     mean_x = np.mean(disp_x)
     mean_y = np.mean(disp_y)
-    print(f"Angular displacement: {mean_x:.2f},{mean_y:.2f}")
+    #print(f"Angular displacement: {mean_x:.2f},{mean_y:.2f}")
 
     if display:
         f=plt.figure()
@@ -231,11 +234,12 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
         plt.title("Model")
         plt.show()
     if output_path:
-        data_path=os.path.join(output_path,"data.jpg")
-        model_path=os.path.join(output_path,"model.jpg")
+        date = datetime. now().strftime("%Y_%m_%d-%I:%M:%S_%p")
+        data_path=os.path.join(output_path,date+"_data.jpg")
+        model_path=os.path.join(output_path,date+"_model.jpg")
         cv2.imwrite(data_path,im1)
         cv2.imwrite(model_path,im2)
-    return mean_x,mean_y
+    return point_0,point_1
 
 if __name__ == "__main__":
     im1 = cv2.imread('real.jpeg',cv2.IMREAD_GRAYSCALE)
