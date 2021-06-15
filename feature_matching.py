@@ -234,7 +234,7 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
         plt.title("Model")
         plt.show()
     if output_path:
-        date = datetime. now().strftime("%Y_%m_%d-%I:%M:%S_%p")
+        date = datetime. now().strftime("%Y_%m_%d-%H:%M:%S")
         data_path=os.path.join(output_path,date+"_data.jpg")
         model_path=os.path.join(output_path,date+"_model.jpg")
         cv2.imwrite(data_path,im1)
