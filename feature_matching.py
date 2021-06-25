@@ -203,6 +203,7 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
     disp_y = []
     point_0 = (candidates[0][0][0],candidates[0][0][1])
     point_1 = (candidates[0][1][0],candidates[0][1][1])
+    theta = candidates[0][4]
     for i,candidate in enumerate(candidates):
         if (candidate[2] < bestNumMatches and i > 4): #only use candidates with high number of matches
             break
@@ -228,7 +229,7 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
         f=plt.figure()
         f.add_subplot(1,2,1)
         plt.imshow(im1)
-        plt.title("Data")
+        plt.title("Camera Image")
         f.add_subplot(1,2,2)
         plt.imshow(im2)
         plt.title("Model")
@@ -239,7 +240,7 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
         model_path=os.path.join(output_path,date+"_model.jpg")
         cv2.imwrite(data_path,im1)
         cv2.imwrite(model_path,im2)
-    return point_0,point_1
+    return point_0,point_1,theta
 
 if __name__ == "__main__":
     im1 = cv2.imread('real.jpeg',cv2.IMREAD_GRAYSCALE)

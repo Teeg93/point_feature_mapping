@@ -104,11 +104,13 @@ def visualizeLocalClusters(C1,C2):
     plt.scatter(x2[0],y2[0])
     plt.show()
 
-def samSearch(M,D,data_kNN=7,model_kNN=7,match_threshold=1.0,variance_yaw=0.0):
+def samSearch(M,D,data_kNN=7,model_kNN=7,match_threshold=1.0,variance_yaw=0.0,offset_yaw=0.0):
     """
     This is currently an exhaustive search
     TODO: Implement a magnitude-based preferential search with an end criterion (we only need 1 star after all)
     """
+    model_cluster = None
+    data_cluster = None
     Cm=[] #list of local clusters from model
     Cd=[] #list of local clusterd from data
     candidates = []
@@ -122,21 +124,33 @@ def samSearch(M,D,data_kNN=7,model_kNN=7,match_threshold=1.0,variance_yaw=0.0):
         bestNumberOfMatches = 0
         index = 0
         for j in range(len(Cm)): #search each model cluster
-            for theta in np.arange(-variance_yaw,variance_yaw+0.05,0.05): #rotate each cluster
-                rotatedCd = Cd[i].rotateLocalCluster(theta)
-                distance,numberOfMatches= rotatedCd.compareDistance(Cm[j])
-                if numberOfMatches >= bestNumberOfMatches:
-                    if distance < bestDistance:
-                        bestNumberOfMatches=numberOfMatches
-                        bestDistance=distance
-                        bestTheta=theta
-                        index = j
+            rotatedCd = Cd[i].rotateLocalCluster(offset_yaw)
+            distance,numberOfMatches= rotatedCd.compareDistance(Cm[j])
+            if numberOfMatches >= bestNumberOfMatches:
+                if distance < bestDistance:
+                    bestNumberOfMatches=numberOfMatches
+                    bestDistance=distance
+                    index = j
+                    model_cluster = Cm[j]
+                    data_cluster = Cd[i]
+
+
         #print(f"Matched point {i} ({Cd[i][0][0]:.2f},{Cd[i][0][1]:.2f}) to {index} ({Cm[index][0][0]:.2f},{Cm[index][0][1]:.2f})")
         #print(f"Best theta: {2*np.pi-bestTheta}, Best Distance: {bestDistance}, Best Number of Matches: {bestNumberOfMatches}")
         candidates.append([Cd[i][0],Cm[index][0],bestNumberOfMatches,bestDistance])
 
     candidates = sorted(candidates,key=lambda x: (x[2],x[3])) #sort first by number of matches, then by distance
     candidates.reverse()
+
+    #compute angular offset for best candidate
+    for theta in np.arange(-variance_yaw, variance_yaw + 0.0002, 0.0002):
+        rotatedCd = data_cluster.rotateLocalCluster(offset_yaw + theta)
+        distance, numberOfMatches = rotatedCd.compareDistance(model_cluster)
+        if distance < bestDistance:
+            bestTheta = theta
+            bestDistance = distance
+    candidates[0].append(bestTheta)
+
     return candidates
     #visualizeLocalClusters(bestRotatedClust,Cm[index])
 
