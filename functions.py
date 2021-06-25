@@ -151,7 +151,7 @@ def samSearch(M,D,data_kNN=7,model_kNN=7,match_threshold=1.0,variance_yaw=0.0,of
             bestTheta = theta
             bestDistance = distance
 
-    visualizeLocalClusters(data_cluster,data_cluster.rotateLocalCluster(offset_yaw-bestTheta))
+    #visualizeLocalClusters(data_cluster,data_cluster.rotateLocalCluster(offset_yaw-bestTheta))
     candidates[0].append(bestTheta)
 
     return candidates
