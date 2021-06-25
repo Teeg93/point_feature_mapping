@@ -245,4 +245,4 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
 if __name__ == "__main__":
     im1 = cv2.imread('real.jpeg',cv2.IMREAD_GRAYSCALE)
     im2 = cv2.imread('sim.png',cv2.IMREAD_GRAYSCALE)
-    computeAngularOffset(im1,im2,star_match_threshold=0.3,variance_yaw=0,display=True)
+    computeAngularOffset(im1,im2,star_match_threshold=0.3,variance_yaw=0.02,display=True)

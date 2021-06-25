@@ -98,10 +98,11 @@ def visualizeLocalClusters(C1,C2):
     for j in range(len(C2.neighbours)):
         x2.append(x2[0]+C2.neighbours[j][0])
         y2.append(y2[0]+C2.neighbours[j][1])
-    plt.scatter(x1,y1)
-    plt.scatter(x2,y2)
+    plt.scatter(x1,y1,label="C1")
+    plt.scatter(x2,y2,label="C2")
     plt.scatter(x1[0],y1[0])
     plt.scatter(x2[0],y2[0])
+    plt.legend()
     plt.show()
 
 def samSearch(M,D,data_kNN=7,model_kNN=7,match_threshold=1.0,variance_yaw=0.0,offset_yaw=0.0):
@@ -149,6 +150,8 @@ def samSearch(M,D,data_kNN=7,model_kNN=7,match_threshold=1.0,variance_yaw=0.0,of
         if distance < bestDistance:
             bestTheta = theta
             bestDistance = distance
+
+    visualizeLocalClusters(data_cluster,data_cluster.rotateLocalCluster(offset_yaw-bestTheta))
     candidates[0].append(bestTheta)
 
     return candidates
