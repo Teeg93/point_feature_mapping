@@ -38,12 +38,12 @@ class ImageMeta:
         self.pixel_size = pixel_size
         if not hfov:
             self.hfov = np.degrees(self.compute_fov(width,pixel_size,focal_length))
-            #print(f"Horizontal FOV: {self.hfov}")
+            print(f"Horizontal FOV: {self.hfov}")
         else:
             self.hfov = hfov
         if not vfov:
             self.vfov = np.degrees(self.compute_fov(height,pixel_size,focal_length))
-            #print(f"Vertical FOV:   {self.vfov}")
+            print(f"Vertical FOV:   {self.vfov}")
         else:
             self.vfov = vfov
         self.x_mid = self.width / 2
@@ -126,7 +126,7 @@ def compute_distance_score(arr1,arr2,threshold=np.inf):
     return score
 
 
-def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pixel_size=1.12e-6,display=False,data_threshold=60,model_threshold=50,star_match_threshold=1.0,variance_yaw=0.0,output_path=""):
+def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pixel_size=1.12e-6,display=False,data_threshold=60,model_threshold=50,star_match_threshold=1.0,variance_yaw=0.0,offset_yaw=0.0,output_path=""):
     """
     :param im1: image containing the data point
     :param im2: image of the model
@@ -194,7 +194,7 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
 
     now = time.time()
     #run the matching operation
-    candidates = samSearch(M,D,data_kNN=data_kNN,model_kNN=model_kNN,match_threshold=star_match_threshold,variance_yaw=variance_yaw)
+    candidates = samSearch(M,D,data_kNN=data_kNN,model_kNN=model_kNN,match_threshold=star_match_threshold,variance_yaw=variance_yaw,offset_yaw=offset_yaw)
     search_time = time.time()-now
     #print(f"Search time: {search_time}")
 
