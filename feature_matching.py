@@ -31,39 +31,30 @@ def threshold(grayscale_img,threshold=100,num_stars=25,tolerance=3,depth=0):
     return returnList
 
 class ImageMeta:
-    def __init__(self,width,height,focal_length,pixel_size,hfov=None,vfov=None):
+    def __init__(self,width,height,hfov,vfov):
         self.width = width
         self.height = height
-        self.focal_length = focal_length
-        self.pixel_size = pixel_size
-        if not hfov:
-            self.hfov = np.degrees(self.compute_fov(width,pixel_size,focal_length))
-            print(f"Horizontal FOV: {self.hfov}")
-        else:
-            self.hfov = hfov
-        if not vfov:
-            self.vfov = np.degrees(self.compute_fov(height,pixel_size,focal_length))
-            print(f"Vertical FOV:   {self.vfov}")
-        else:
-            self.vfov = vfov
+        self.hfov = hfov
+        self.vfov = vfov
         self.x_mid = self.width / 2
         self.y_mid = self.height / 2
 
-    def compute_fov(self,pixels,pixel_size,focal_length):
-        x = (pixels/2.0)*pixel_size
-        fov = 2*np.arctan(x/focal_length)
-        return fov
+        self.focal_length = (0.5*self.width) / np.tan(np.radians(self.hfov)/2.0)
+        print(f"Horizontal Focal length: {self.focal_length} pixels")
+        self.focal_length = (0.5*self.height) / np.tan(np.radians(self.vfov)/2.0)
+        print(f"Vertical Focal length: {self.focal_length} pixels")
+
 
     def point_to_angle(self,p):
         dx = p[0] - self.x_mid
         dy = p[1] - self.y_mid
-        theta_x = np.degrees(np.arctan(dx*self.pixel_size/self.focal_length))
-        theta_y = np.degrees(np.arctan(dy*self.pixel_size/self.focal_length))
+        theta_x = np.degrees(np.arctan(dx/self.focal_length))
+        theta_y = np.degrees(np.arctan(dy/self.focal_length))
         return(theta_x,theta_y)
 
     def angle_to_point(self,angle):
-        dx = (self.focal_length*np.tan(np.radians(angle[0])))/self.pixel_size
-        dy = (self.focal_length*np.tan(np.radians(angle[1])))/self.pixel_size
+        dx = (self.focal_length*np.tan(np.radians(angle[0])))
+        dy = (self.focal_length*np.tan(np.radians(angle[1])))
         x = int(self.x_mid+dx)
         y = int(self.y_mid+dy)
         return(x,y)
@@ -126,7 +117,23 @@ def compute_distance_score(arr1,arr2,threshold=np.inf):
     return score
 
 
-def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pixel_size=1.12e-6,display=False,data_threshold=60,model_threshold=50,star_match_threshold=1.0,variance_yaw=0.0,offset_yaw=0.0,output_path=""):
+def computeAngularOffset(im1,
+                         im2,
+                         data_width=3280,
+                         data_height=2464,
+                         data_hfov=63,
+                         data_vfov=47,
+                         model_width=3280,
+                         model_height=2464,
+                         model_hfov=63,
+                         model_vfov=47,
+                         display=False,
+                         data_threshold=60,
+                         model_threshold=50,
+                         star_match_threshold=1.0,
+                         variance_yaw=0.0,
+                         offset_yaw=0.0,
+                         output_path=""):
     """
     :param im1: image containing the data point
     :param im2: image of the model
@@ -142,7 +149,8 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
     :return: theta_x, theta_y
     """
     #Threshold the images
-    imageMeta = ImageMeta(width,height,focal_length=focal_length,pixel_size=pixel_size)
+    dataImageMeta = ImageMeta(data_width,data_height,hfov=data_hfov,vfov=data_vfov)
+    modelImageMeta = ImageMeta(model_width,model_height,hfov=model_hfov,vfov=model_vfov)
     data_cnts = threshold(im1,threshold=data_threshold,num_stars=30)
     model_cnts = threshold(im2,threshold=model_threshold,num_stars=60)
 
@@ -180,11 +188,11 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
     M = [] #list of model points
     D = [] #list of data points
     for i in range(len(data_stars)):
-        p = imageMeta.point_to_angle(data_stars[i])
+        p = dataImageMeta.point_to_angle(data_stars[i])
         D.append(Point2D(p[0],p[1]))
 
     for i in range(len(model_stars)):
-        p = imageMeta.point_to_angle(model_stars[i])
+        p = modelImageMeta.point_to_angle(model_stars[i])
         M.append(Point2D(p[0],p[1]))
 
     im1=cv2.cvtColor(im1,cv2.COLOR_GRAY2BGR)
@@ -213,8 +221,8 @@ def computeAngularOffset(im1,im2,width=3280,height=2464,focal_length=3.04e-3,pix
             color=(255,0,0)
         else:
             color=(0,255,0)
-        point0 = (imageMeta.angle_to_point([candidate[0][0],candidate[0][1]]))
-        point1 = (imageMeta.angle_to_point([candidate[1][0],candidate[1][1]]))
+        point0 = (dataImageMeta.angle_to_point([candidate[0][0],candidate[0][1]]))
+        point1 = (modelImageMeta.angle_to_point([candidate[1][0],candidate[1][1]]))
         #cv2.line(im2,point0,point1,color,1)
         #cv2.putText(im1,f"{i}",(point0[0]-10,point0[1]+90),cv2.FONT_HERSHEY_SIMPLEX,3,(255,255,255),2)
         cv2.circle(im1,point0,10,color,2)
