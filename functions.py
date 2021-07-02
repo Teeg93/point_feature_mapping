@@ -123,14 +123,16 @@ def samSearch(M,D,data_kNN=7,model_kNN=7,match_threshold=1.0,variance_yaw=0.0,of
         bestTheta = 0
         bestDistance = np.inf
         bestNumberOfMatches = 0
+        bestMatchedPoints = []
         index = 0
         for j in range(len(Cm)): #search each model cluster
             rotatedCd = Cd[i].rotateLocalCluster(offset_yaw)
-            distance,numberOfMatches= rotatedCd.compareDistance(Cm[j])
+            distance,numberOfMatches,matched_points= rotatedCd.compareDistance(Cm[j])
             if numberOfMatches >= bestNumberOfMatches:
                 if distance < bestDistance:
                     bestNumberOfMatches=numberOfMatches
                     bestDistance=distance
+                    bestMatchedPoints = matched_points
                     index = j
                     model_cluster = Cm[j]
                     data_cluster = Cd[i]
@@ -138,15 +140,15 @@ def samSearch(M,D,data_kNN=7,model_kNN=7,match_threshold=1.0,variance_yaw=0.0,of
 
         #print(f"Matched point {i} ({Cd[i][0][0]:.2f},{Cd[i][0][1]:.2f}) to {index} ({Cm[index][0][0]:.2f},{Cm[index][0][1]:.2f})")
         #print(f"Best theta: {2*np.pi-bestTheta}, Best Distance: {bestDistance}, Best Number of Matches: {bestNumberOfMatches}")
-        candidates.append([Cd[i][0],Cm[index][0],bestNumberOfMatches,bestDistance])
+        candidates.append([Cd[i],Cm[index],bestNumberOfMatches,bestDistance,bestMatchedPoints])
 
     candidates = sorted(candidates,key=lambda x: (x[2],x[3])) #sort first by number of matches, then by distance
     candidates.reverse()
 
     #compute angular offset for best candidate
     for theta in np.arange(-variance_yaw, variance_yaw + 0.0002, 0.0002):
-        rotatedCd = data_cluster.rotateLocalCluster(offset_yaw + theta)
-        distance, numberOfMatches = rotatedCd.compareDistance(model_cluster)
+        rotatedCd = candidates[0][0].rotateLocalCluster(offset_yaw + theta)
+        distance, numberOfMatches,matched_points = rotatedCd.compareDistance(model_cluster)
         if distance < bestDistance:
             bestTheta = theta
             bestDistance = distance

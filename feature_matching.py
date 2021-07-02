@@ -209,28 +209,24 @@ def computeAngularOffset(im1,
     bestNumMatches = candidates[0][2]
     disp_x = []
     disp_y = []
-    point_0 = (candidates[0][0][0],candidates[0][0][1])
-    point_1 = (candidates[0][1][0],candidates[0][1][1])
-    theta = candidates[0][4]
-    for i,candidate in enumerate(candidates):
-        if (candidate[2] < bestNumMatches and i > 4): #only use candidates with high number of matches
-            break
-        disp_x.append(candidate[1][0]-candidate[0][0])
-        disp_y.append(candidate[1][1]-candidate[0][1])
-        if i==0:
-            color=(255,0,0)
-        else:
-            color=(0,255,0)
-        point0 = (dataImageMeta.angle_to_point([candidate[0][0],candidate[0][1]]))
-        point1 = (modelImageMeta.angle_to_point([candidate[1][0],candidate[1][1]]))
+    point_0 = (candidates[0][0][0][0],candidates[0][0][0][1])
+    point_1 = (candidates[0][1][0][0],candidates[0][1][0][1])
+    theta = candidates[0][5]
+    color=(255,0,0)
+    data_origin = [candidates[0][0][0][0],candidates[0][0][0][1]]
+    model_origin = [candidates[0][1][0][0],candidates[0][1][0][1]]
+    cv2.circle(im1, dataImageMeta.angle_to_point(data_origin), 10, color, 2)
+    cv2.circle(im2, modelImageMeta.angle_to_point(model_origin), 10, color, 2)
+    for i,matched_point in enumerate(candidates[0][4]):
+        color=(0,255,0)
+        point0 = (dataImageMeta.angle_to_point([data_origin[0]+candidates[0][0][matched_point[0]][0],data_origin[1]+candidates[0][0][matched_point[0]][1]]))
+        point1 = (modelImageMeta.angle_to_point([model_origin[0]+candidates[0][1][matched_point[1]][0],model_origin[1]+candidates[0][1][matched_point[1]][1]]))
         #cv2.line(im2,point0,point1,color,1)
         #cv2.putText(im1,f"{i}",(point0[0]-10,point0[1]+90),cv2.FONT_HERSHEY_SIMPLEX,3,(255,255,255),2)
         cv2.circle(im1,point0,10,color,2)
         #cv2.putText(im2,f"{i}",(point1[0]-10,point1[1]+90),cv2.FONT_HERSHEY_SIMPLEX,3,(255,255,255),2)
         cv2.circle(im2,point1,10,color,2)
         #cv2.circle(im2,point0, 10, color, 2)
-    mean_x = np.mean(disp_x)
-    mean_y = np.mean(disp_y)
     #print(f"Angular displacement: {mean_x:.2f},{mean_y:.2f}")
 
     if display:

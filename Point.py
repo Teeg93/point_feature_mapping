@@ -83,6 +83,7 @@ class LocalCluster:
         else:
             self.neighbours = []
         self.threshold=threshold
+
     def __getitem__(self, item):
         if item==0:
             return self.origin
@@ -107,6 +108,7 @@ class LocalCluster:
 
     def compareDistance(self,cluster):
         used_idx=[]
+        matched_points=[]
         ranges=[]
         for i in range(len(self.neighbours)):
             shortest_dist=np.inf
@@ -123,9 +125,10 @@ class LocalCluster:
             if not shortest_dist==np.inf:
                 used_idx.append(shortest_idx)
                 ranges.append(shortest_dist)
+                matched_points.append([i,shortest_idx])
 
         if len(ranges) == 0:
-            return (np.inf,0)
+            return (np.inf,0,matched_points)
         distance = 0
         numberOfMatches=0
         for i in range(len(ranges)):
@@ -133,7 +136,7 @@ class LocalCluster:
                 distance += ranges[i]*ranges[i]
                 numberOfMatches+=1
         distance=np.sqrt(distance)/numberOfMatches
-        return(distance,numberOfMatches)
+        return(distance,numberOfMatches,matched_points)
 
 
 def dotproduct(v1, v2):
